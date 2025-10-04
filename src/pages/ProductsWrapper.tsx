@@ -1,15 +1,15 @@
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import Home from "./Home";
+import Products from "./Products";
 
-const Index = () => {
+const ProductsWrapper = () => {
   return (
     <div className="min-h-screen">
       <Navbar cartItemsCount={0} />
-      <Home />
+      <Products />
       <Footer />
     </div>
   );
 };
 
-export default Index;
+export default ProductsWrapper;
