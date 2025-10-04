@@ -1,0 +1,140 @@
+@model List<YameApi.Models.Product>
+@{
+    ViewData["Title"] = "YAME - Thời trang Việt Nam cao cấp";
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"]</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #1a1a1a;
+            --accent-color: #f59e0b;
+            --text-muted: #6b7280;
+        }
+        
+        .hero-section {
+            background: linear-gradient(135deg, rgba(0,0,0,0.7), rgba(0,0,0,0.5)), url('/images/hero-fashion.jpg');
+            background-size: cover;
+            background-position: center;
+            height: 600px;
+            display: flex;
+            align-items: center;
+            color: white;
+        }
+        
+        .product-card {
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .product-image {
+            aspect-ratio: 1;
+            object-fit: cover;
+            width: 100%;
+        }
+        
+        .badge-sale {
+            background-color: #ef4444;
+            color: white;
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom sticky-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold fs-3" href="/">YAME</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="/">Trang chủ</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/Products">Sản phẩm</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/Collections">Bộ sưu tập</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/About">Về chúng tôi</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6">
+                    <h1 class="display-3 fw-bold mb-4">Thời trang Việt Nam hiện đại</h1>
+                    <p class="fs-5 mb-4">Khám phá bộ sưu tập mới nhất với chất lượng cao cấp và thiết kế độc đáo</p>
+                    <a href="/Products" class="btn btn-warning btn-lg px-5">Khám phá ngay</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Products -->
+    <section class="py-5">
+        <div class="container">
+            <h2 class="text-center mb-5 fw-bold">Sản phẩm nổi bật</h2>
+            <div class="row g-4">
+                @foreach (var product in Model.Take(4))
+                {
+                    var hasDiscount = product.SalePrice.HasValue && product.SalePrice < product.Price;
+                    var discountPercent = hasDiscount ? Math.Round(((product.Price - product.SalePrice!.Value) / product.Price) * 100) : 0;
+                    
+                    <div class="col-md-6 col-lg-3">
+                        <div class="product-card">
+                            <div class="position-relative">
+                                <img src="@product.Images.FirstOrDefault()" alt="@product.Title" class="product-image">
+                                @if (hasDiscount)
+                                {
+                                    <span class="badge-sale">-@discountPercent%</span>
+                                }
+                            </div>
+                            <div class="p-3">
+                                <h5 class="fw-semibold mb-2">@product.Title</h5>
+                                <p class="text-muted small mb-3">@product.ShortDescription</p>
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <span class="fs-5 fw-bold">@((product.SalePrice ?? product.Price).ToString("N0"))đ</span>
+                                        @if (hasDiscount)
+                                        {
+                                            <span class="text-muted text-decoration-line-through small ms-2">@product.Price.ToString("N0")đ</span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-light border-top mt-5 py-4">
+        <div class="container text-center">
+            <p class="mb-0 text-muted">&copy; 2025 YAME Vietnam. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
