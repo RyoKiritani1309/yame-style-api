@@ -1,140 +1,192 @@
 @model List<YameApi.Models.Product>
 @{
-    ViewData["Title"] = "YAME - Thời trang Việt Nam cao cấp";
+    ViewData["Title"] = "Trang chủ";
 }
 
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@ViewData["Title"]</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        :root {
-            --primary-color: #1a1a1a;
-            --accent-color: #f59e0b;
-            --text-muted: #6b7280;
-        }
-        
-        .hero-section {
-            background: linear-gradient(135deg, rgba(0,0,0,0.7), rgba(0,0,0,0.5)), url('/images/hero-fashion.jpg');
-            background-size: cover;
-            background-position: center;
-            height: 600px;
-            display: flex;
-            align-items: center;
-            color: white;
-        }
-        
-        .product-card {
-            transition: transform 0.3s, box-shadow 0.3s;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        
-        .product-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-        }
-        
-        .product-image {
-            aspect-ratio: 1;
-            object-fit: cover;
-            width: 100%;
-        }
-        
-        .badge-sale {
-            background-color: #ef4444;
-            color: white;
-            position: absolute;
-            top: 12px;
-            right: 12px;
-            padding: 4px 12px;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-    </style>
-</head>
-<body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom sticky-top">
-        <div class="container">
-            <a class="navbar-brand fw-bold fs-3" href="/">YAME</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="/">Trang chủ</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/Products">Sản phẩm</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/Collections">Bộ sưu tập</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/About">Về chúng tôi</a></li>
-                </ul>
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-bg">
+        <img src="/images/hero-fashion.jpg" alt="Fashion collection" />
+        <div class="hero-overlay"></div>
+    </div>
+    
+    <div class="container hero-content">
+        <div class="hero-text">
+            <h1 class="hero-title">
+                Thời Trang<br />
+                <span class="accent">Hiện Đại</span>
+            </h1>
+            
+            <p class="hero-description">
+                Khám phá bộ sưu tập mới nhất với thiết kế độc đáo và chất lượng cao cấp.
+                Phong cách Việt, chất lượng quốc tế.
+            </p>
+
+            <div class="hero-buttons">
+                <a href="/ProductsView" class="btn btn-primary">
+                    Mua sắm ngay
+                    <svg class="icon btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                    </svg>
+                </a>
+                
+                <a href="/collections" class="btn btn-outline">
+                    Bộ sưu tập
+                </a>
             </div>
         </div>
-    </nav>
+    </div>
+</section>
 
-    <!-- Hero Section -->
-    <section class="hero-section">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-6">
-                    <h1 class="display-3 fw-bold mb-4">Thời trang Việt Nam hiện đại</h1>
-                    <p class="fs-5 mb-4">Khám phá bộ sưu tập mới nhất với chất lượng cao cấp và thiết kế độc đáo</p>
-                    <a href="/Products" class="btn btn-warning btn-lg px-5">Khám phá ngay</a>
-                </div>
+<!-- Featured Products Section -->
+<section class="section">
+    <div class="container">
+        <div class="section-header-flex">
+            <div>
+                <h2 class="section-title">Sản phẩm nổi bật</h2>
+                <p class="section-subtitle">Khám phá những sản phẩm được yêu thích nhất</p>
             </div>
+            <a href="/ProductsView" class="btn btn-outline">
+                Xem tất cả
+                <svg class="icon btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                </svg>
+            </a>
         </div>
-    </section>
 
-    <!-- Featured Products -->
-    <section class="py-5">
-        <div class="container">
-            <h2 class="text-center mb-5 fw-bold">Sản phẩm nổi bật</h2>
-            <div class="row g-4">
-                @foreach (var product in Model.Take(4))
-                {
-                    var hasDiscount = product.SalePrice.HasValue && product.SalePrice < product.Price;
-                    var discountPercent = hasDiscount ? Math.Round(((product.Price - product.SalePrice!.Value) / product.Price) * 100) : 0;
-                    
-                    <div class="col-md-6 col-lg-3">
-                        <div class="product-card">
-                            <div class="position-relative">
-                                <img src="@product.Images.FirstOrDefault()" alt="@product.Title" class="product-image">
-                                @if (hasDiscount)
+        <div class="product-grid">
+            @foreach (var product in Model.Take(4))
+            {
+                var hasDiscount = product.SalePrice.HasValue && product.SalePrice < product.Price;
+                var discountPercent = hasDiscount ? Math.Round(((product.Price - product.SalePrice!.Value) / product.Price) * 100) : 0;
+
+                <div class="product-card">
+                    <a href="/ProductsView/Detail/@product.Id">
+                        <div class="product-image-wrapper">
+                            <img src="@product.Images.FirstOrDefault()" alt="@product.Title" class="product-image" />
+                            @if (hasDiscount)
+                            {
+                                <span class="product-badge badge-sale">-@discountPercent%</span>
+                            }
+                        </div>
+                        
+                        <div class="product-info">
+                            <div class="product-tags">
+                                @foreach (var tag in product.Tags.Take(2))
                                 {
-                                    <span class="badge-sale">-@discountPercent%</span>
+                                    <span class="product-tag">@tag</span>
                                 }
                             </div>
-                            <div class="p-3">
-                                <h5 class="fw-semibold mb-2">@product.Title</h5>
-                                <p class="text-muted small mb-3">@product.ShortDescription</p>
-                                <div class="d-flex align-items-center justify-content-between">
-                                    <div>
-                                        <span class="fs-5 fw-bold">@((product.SalePrice ?? product.Price).ToString("N0"))đ</span>
-                                        @if (hasDiscount)
-                                        {
-                                            <span class="text-muted text-decoration-line-through small ms-2">@product.Price.ToString("N0")đ</span>
-                                        }
-                                    </div>
-                                </div>
+                            
+                            <h3 class="product-title">@product.Title</h3>
+                            
+                            <p class="product-description">@product.ShortDescription</p>
+
+                            <div class="product-price-wrapper">
+                                <span class="product-price">
+                                    @((product.SalePrice ?? product.Price).ToString("N0"))đ
+                                </span>
+                                @if (hasDiscount)
+                                {
+                                    <span class="product-price-old">@product.Price.ToString("N0")đ</span>
+                                }
                             </div>
                         </div>
+                    </a>
+                    
+                    <div class="product-quick-add">
+                        <button class="btn btn-icon-only" onclick="event.preventDefault();">
+                            <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                            </svg>
+                        </button>
                     </div>
-                }
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- Categories Section -->
+<section class="section bg-muted">
+    <div class="container">
+        <div class="section-header section-center">
+            <h2 class="section-title">Danh mục sản phẩm</h2>
+            <p class="section-subtitle">Tìm kiếm theo danh mục yêu thích của bạn</p>
+        </div>
+
+        <div class="product-grid product-grid-3">
+            <a href="/ProductsView?category=ao" class="category-card">
+                <div class="category-content">
+                    <h3 class="category-title">Áo</h3>
+                    <p class="category-description">Áo thun, hoodie, áo khoác và nhiều hơn nữa</p>
+                </div>
+                <div class="category-decoration"></div>
+            </a>
+
+            <a href="/ProductsView?category=quan" class="category-card">
+                <div class="category-content">
+                    <h3 class="category-title">Quần</h3>
+                    <p class="category-description">Quần jean, kaki, short và nhiều kiểu dáng</p>
+                </div>
+                <div class="category-decoration"></div>
+            </a>
+
+            <a href="/ProductsView?category=giay" class="category-card">
+                <div class="category-content">
+                    <h3 class="category-title">Giày dép</h3>
+                    <p class="category-description">Sneaker, sandal và phụ kiện thời trang</p>
+                </div>
+                <div class="category-decoration"></div>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Why Choose Us Section -->
+<section class="section">
+    <div class="container">
+        <div class="section-header section-center">
+            <h2 class="section-title">Tại sao chọn YAME?</h2>
+            <p class="section-subtitle">Cam kết mang đến trải nghiệm mua sắm tốt nhất</p>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                </div>
+                <h3 class="feature-title">Chất lượng cao cấp</h3>
+                <p class="feature-description">
+                    Sản phẩm được làm từ chất liệu cao cấp, bền đẹp theo thời gian
+                </p>
+            </div>
+
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <h3 class="feature-title">Giao hàng nhanh</h3>
+                <p class="feature-description">
+                    Miễn phí vận chuyển cho đơn hàng trên 500.000đ toàn quốc
+                </p>
+            </div>
+
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    </svg>
+                </div>
+                <h3 class="feature-title">Đổi trả dễ dàng</h3>
+                <p class="feature-description">
+                    Chính sách đổi trả trong vòng 30 ngày, hoàn tiền 100%
+                </p>
             </div>
         </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="bg-light border-top mt-5 py-4">
-        <div class="container text-center">
-            <p class="mb-0 text-muted">&copy; 2025 YAME Vietnam. All rights reserved.</p>
-        </div>
-    </footer>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+    </div>
+</section>
