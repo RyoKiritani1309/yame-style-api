@@ -101,13 +101,39 @@ CREATE TABLE Reviews (
 );
 GO
 
--- Customers Table
+-- Users Table (Authentication)
+CREATE TABLE Users (
+    UserId INT PRIMARY KEY IDENTITY(1,1),
+    Email NVARCHAR(200) NOT NULL UNIQUE,
+    PasswordHash NVARCHAR(500) NOT NULL,
+    FullName NVARCHAR(200),
+    Phone NVARCHAR(20),
+    IsEmailConfirmed BIT DEFAULT 0,
+    CreatedAt DATETIME2 DEFAULT GETDATE(),
+    LastLoginAt DATETIME2 NULL
+);
+GO
+
+-- User Roles Table
+CREATE TABLE UserRoles (
+    RoleId INT PRIMARY KEY IDENTITY(1,1),
+    UserId INT NOT NULL,
+    Role NVARCHAR(50) NOT NULL CHECK (Role IN ('admin', 'customer', 'moderator')),
+    CreatedAt DATETIME2 DEFAULT GETDATE(),
+    FOREIGN KEY (UserId) REFERENCES Users(UserId) ON DELETE CASCADE,
+    UNIQUE (UserId, Role)
+);
+GO
+
+-- Customers Table (kept for backward compatibility, linked to Users)
 CREATE TABLE Customers (
     CustomerId INT PRIMARY KEY IDENTITY(1,1),
+    UserId INT NOT NULL UNIQUE,
     Email NVARCHAR(200) NOT NULL UNIQUE,
     FullName NVARCHAR(200),
     Phone NVARCHAR(20),
-    CreatedAt DATETIME2 DEFAULT GETDATE()
+    CreatedAt DATETIME2 DEFAULT GETDATE(),
+    FOREIGN KEY (UserId) REFERENCES Users(UserId) ON DELETE CASCADE
 );
 GO
 

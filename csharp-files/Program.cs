@@ -5,6 +5,15 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container
 builder.Services.AddControllersWithViews(); // Changed to support MVC views
 
+// Add session support for authentication
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromHours(24);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
 // Register application services
 builder.Services.AddSingleton<IProductService, ProductService>();
 builder.Services.AddSingleton<ICartService, CartService>();
@@ -29,6 +38,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles(); // Enable serving static files (CSS, JS, images)
 app.UseCors("AllowFrontend");
 app.UseRouting();
+app.UseSession(); // Enable session before authorization
 app.UseAuthorization();
 
 // Map MVC routes (for views)

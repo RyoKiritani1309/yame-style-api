@@ -36,6 +36,18 @@
                     </svg>
                     <span class="cart-badge">0</span>
                 </button>
+
+                @if (Context.Session.GetString("UserEmail") != null)
+                {
+                    <div class="user-menu">
+                        <span class="user-name">@Context.Session.GetString("UserName")</span>
+                        <a href="/Account/Logout" class="logout-btn">Đăng xuất</a>
+                    </div>
+                }
+                else
+                {
+                    <a href="/Account/Login" class="login-btn">Đăng nhập</a>
+                }
             </div>
         </div>
     </nav>
