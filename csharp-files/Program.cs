@@ -14,9 +14,10 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
-// Register application services
-builder.Services.AddSingleton<IProductService, ProductService>();
-builder.Services.AddSingleton<ICartService, CartService>();
+// Register application services - DATABASE BACKED
+builder.Services.AddScoped<IProductService, ProductServiceDatabase>();
+builder.Services.AddScoped<ICartService, CartServiceDatabase>();
+builder.Services.AddScoped<IAccountService, AccountServiceDatabase>();
 
 // Add CORS for frontend
 builder.Services.AddCors(options =>

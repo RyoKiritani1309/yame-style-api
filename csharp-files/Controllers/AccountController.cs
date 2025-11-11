@@ -1,13 +1,16 @@
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Cryptography;
-using System.Text;
+using YameApi.Services;
 
 namespace YameApi.Controllers;
 
 public class AccountController : Controller
 {
-    // In-memory user storage for demo (replace with database in production)
-    private static List<UserAccount> _users = new List<UserAccount>();
+    private readonly IAccountService _accountService;
+
+    public AccountController(IAccountService accountService)
+    {
+        _accountService = accountService;
+    }
 
     public IActionResult Login()
     {
@@ -15,7 +18,7 @@ public class AccountController : Controller
     }
 
     [HttpPost]
-    public IActionResult Login(string email, string password)
+    public async Task<IActionResult> Login(string email, string password)
     {
         if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
         {
@@ -23,8 +26,8 @@ public class AccountController : Controller
             return View();
         }
 
-        var user = _users.FirstOrDefault(u => u.Email == email);
-        if (user == null || !VerifyPassword(password, user.PasswordHash))
+        var user = await _accountService.LoginAsync(email, password);
+        if (user == null)
         {
             ViewBag.Error = "Email hoặc mật khẩu không đúng";
             return View();
@@ -44,7 +47,7 @@ public class AccountController : Controller
     }
 
     [HttpPost]
-    public IActionResult Register(string email, string password, string confirmPassword, string fullName, string phone)
+    public async Task<IActionResult> Register(string email, string password, string confirmPassword, string fullName, string phone)
     {
         if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
         {
@@ -58,23 +61,13 @@ public class AccountController : Controller
             return View();
         }
 
-        if (_users.Any(u => u.Email == email))
+        var newUser = await _accountService.RegisterAsync(email, password, fullName, phone);
+        
+        if (newUser == null)
         {
             ViewBag.Error = "Email đã được sử dụng";
             return View();
         }
-
-        var newUser = new UserAccount
-        {
-            UserId = _users.Count + 1,
-            Email = email,
-            PasswordHash = HashPassword(password),
-            FullName = fullName,
-            Phone = phone,
-            CreatedAt = DateTime.Now
-        };
-
-        _users.Add(newUser);
 
         // Auto login after registration
         HttpContext.Session.SetString("UserId", newUser.UserId.ToString());
@@ -89,31 +82,4 @@ public class AccountController : Controller
         HttpContext.Session.Clear();
         return RedirectToAction("Index", "Home");
     }
-
-    // Password hashing utilities
-    private string HashPassword(string password)
-    {
-        using (var sha256 = SHA256.Create())
-        {
-            var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password + "YAME_SALT"));
-            return Convert.ToBase64String(hashedBytes);
-        }
-    }
-
-    private bool VerifyPassword(string password, string hash)
-    {
-        var newHash = HashPassword(password);
-        return newHash == hash;
-    }
-}
-
-// User model
-public class UserAccount
-{
-    public int UserId { get; set; }
-    public string Email { get; set; } = string.Empty;
-    public string PasswordHash { get; set; } = string.Empty;
-    public string? FullName { get; set; }
-    public string? Phone { get; set; }
-    public DateTime CreatedAt { get; set; }
 }
