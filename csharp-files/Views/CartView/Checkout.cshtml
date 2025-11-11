@@ -1,0 +1,259 @@
+@{
+    ViewData["Title"] = "Thanh toán";
+    var cartId = ViewBag.CartId as string;
+    var userEmail = ViewBag.UserEmail as string;
+    var userName = ViewBag.UserName as string;
+}
+
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-8">Thanh toán</h1>
+
+    <form id="checkoutForm" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="lg:col-span-2 space-y-6">
+            <!-- Customer Information -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-bold mb-4">Thông tin khách hàng</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Họ và tên *</label>
+                        <input type="text" name="fullName" value="@userName" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Email *</label>
+                        <input type="email" name="email" value="@userEmail" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium mb-2">Số điện thoại *</label>
+                        <input type="tel" name="phone" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shipping Address -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-bold mb-4">Địa chỉ giao hàng</h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Địa chỉ *</label>
+                        <input type="text" name="shippingAddress" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary" placeholder="Số nhà, tên đường">
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Tỉnh/Thành phố *</label>
+                            <select name="city" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary">
+                                <option value="">Chọn tỉnh/thành</option>
+                                <option value="Hà Nội">Hà Nội</option>
+                                <option value="TP. Hồ Chí Minh">TP. Hồ Chí Minh</option>
+                                <option value="Đà Nẵng">Đà Nẵng</option>
+                                <option value="Hải Phòng">Hải Phòng</option>
+                                <option value="Cần Thơ">Cần Thơ</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Quận/Huyện *</label>
+                            <input type="text" name="district" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Phường/Xã *</label>
+                            <input type="text" name="ward" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment & Shipping Method -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-bold mb-4">Phương thức thanh toán & vận chuyển</h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Phương thức thanh toán</label>
+                        <div class="space-y-2">
+                            <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                                <input type="radio" name="paymentMethod" value="COD" checked class="mr-3">
+                                <div>
+                                    <div class="font-medium">Thanh toán khi nhận hàng (COD)</div>
+                                    <div class="text-sm text-gray-500">Thanh toán bằng tiền mặt khi nhận hàng</div>
+                                </div>
+                            </label>
+                            <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                                <input type="radio" name="paymentMethod" value="BankTransfer" class="mr-3">
+                                <div>
+                                    <div class="font-medium">Chuyển khoản ngân hàng</div>
+                                    <div class="text-sm text-gray-500">Thanh toán qua chuyển khoản</div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Phương thức vận chuyển</label>
+                        <div class="space-y-2">
+                            <label class="flex items-center justify-between p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                                <div class="flex items-center">
+                                    <input type="radio" name="shippingMethod" value="Standard" checked class="mr-3">
+                                    <div>
+                                        <div class="font-medium">Giao hàng tiêu chuẩn</div>
+                                        <div class="text-sm text-gray-500">3-5 ngày làm việc</div>
+                                    </div>
+                                </div>
+                                <span class="font-semibold">30,000 ₫</span>
+                            </label>
+                            <label class="flex items-center justify-between p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                                <div class="flex items-center">
+                                    <input type="radio" name="shippingMethod" value="Express" class="mr-3">
+                                    <div>
+                                        <div class="font-medium">Giao hàng nhanh</div>
+                                        <div class="text-sm text-gray-500">1-2 ngày làm việc</div>
+                                    </div>
+                                </div>
+                                <span class="font-semibold">60,000 ₫</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notes -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-bold mb-4">Ghi chú đơn hàng</h2>
+                <textarea name="notes" rows="3" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary" placeholder="Ghi chú thêm về đơn hàng (tùy chọn)"></textarea>
+            </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="lg:col-span-1">
+            <div class="bg-white rounded-lg shadow-md p-6 sticky top-4">
+                <h2 class="text-xl font-bold mb-4">Thông tin đơn hàng</h2>
+                <div id="orderSummary" class="text-center py-8">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                    <p class="mt-2 text-gray-500">Đang tải...</p>
+                </div>
+
+                <button type="submit" id="submitBtn" class="w-full bg-primary text-white py-3 rounded-lg hover:bg-primary-dark transition font-semibold mt-6" disabled>
+                    Đặt hàng
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    const cartId = '@cartId';
+    let cartData = null;
+
+    // Load cart summary
+    async function loadCartSummary() {
+        try {
+            const response = await fetch(`/api/v1/cart/${cartId}`);
+            cartData = await response.json();
+
+            const summaryHtml = `
+                <div class="space-y-3 mb-4">
+                    ${cartData.items.map(item => `
+                        <div class="flex gap-3">
+                            <img src="${item.product.images[0]}" alt="${item.product.title}" class="w-16 h-16 object-cover rounded">
+                            <div class="flex-1">
+                                <p class="font-medium text-sm">${item.product.title}</p>
+                                <p class="text-xs text-gray-500">${item.variant.size} | ${item.variant.color}</p>
+                                <p class="text-sm">x${item.quantity}</p>
+                            </div>
+                            <p class="font-semibold">${item.lineTotal.toLocaleString()} ₫</p>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="border-t pt-4 space-y-2">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-600">Tạm tính</span>
+                        <span>${cartData.subTotal.toLocaleString()} ₫</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-600">Phí vận chuyển</span>
+                        <span id="shippingFee">30,000 ₫</span>
+                    </div>
+                    <div class="flex justify-between font-bold text-lg border-t pt-2">
+                        <span>Tổng cộng</span>
+                        <span class="text-primary" id="finalTotal">${(cartData.subTotal + 30000).toLocaleString()} ₫</span>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('orderSummary').innerHTML = summaryHtml;
+            document.getElementById('submitBtn').disabled = false;
+        } catch (error) {
+            console.error('Error loading cart:', error);
+            document.getElementById('orderSummary').innerHTML = '<p class="text-red-500">Không thể tải giỏ hàng</p>';
+        }
+    }
+
+    // Update shipping fee
+    document.querySelectorAll('input[name="shippingMethod"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            const fee = this.value === 'Express' ? 60000 : 30000;
+            document.getElementById('shippingFee').textContent = fee.toLocaleString() + ' ₫';
+            const total = cartData.subTotal + fee;
+            document.getElementById('finalTotal').textContent = total.toLocaleString() + ' ₫';
+        });
+    });
+
+    // Handle form submission
+    document.getElementById('checkoutForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+        const shippingFee = document.querySelector('input[name="shippingMethod"]:checked').value === 'Express' ? 60000 : 30000;
+
+        const checkoutData = {
+            cartId: cartId,
+            fullName: formData.get('fullName'),
+            email: formData.get('email'),
+            phone: formData.get('phone'),
+            shippingAddress: formData.get('shippingAddress'),
+            city: formData.get('city'),
+            district: formData.get('district'),
+            ward: formData.get('ward'),
+            paymentMethod: formData.get('paymentMethod'),
+            shippingMethod: formData.get('shippingMethod'),
+            notes: formData.get('notes')
+        };
+
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Đang xử lý...';
+
+        try {
+            const response = await fetch('/api/v1/orders/checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(checkoutData)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                alert('Đặt hàng thành công! Mã đơn hàng: ' + result.orderNumber);
+                window.location.href = `/CartView/OrderConfirmation?orderId=${result.orderId}`;
+            } else {
+                alert('Lỗi: ' + result.message);
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Đặt hàng';
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Có lỗi xảy ra khi đặt hàng');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Đặt hàng';
+        }
+    });
+
+    loadCartSummary();
+</script>
+
+<style>
+    .bg-primary { background-color: #2563eb; }
+    .text-primary { color: #2563eb; }
+    .hover\:bg-primary-dark:hover { background-color: #1e40af; }
+    .focus\:ring-primary:focus { --tw-ring-color: #2563eb; }
+</style>
