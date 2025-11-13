@@ -40,8 +40,32 @@
                 @if (Context.Session.GetString("UserEmail") != null)
                 {
                     <div class="user-menu">
-                        <span class="user-name">@Context.Session.GetString("UserName")</span>
-                        <a href="/Account/Logout" class="logout-btn">Đăng xuất</a>
+                        <button class="user-menu-trigger">
+                            <span class="user-name">@Context.Session.GetString("UserName")</span>
+                            <svg class="icon-small" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </button>
+                        <div class="user-dropdown">
+                            <a href="/AccountView/Profile" class="dropdown-item">
+                                <svg class="icon-small" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                </svg>
+                                Tài khoản của tôi
+                            </a>
+                            <a href="/AccountView/Orders" class="dropdown-item">
+                                <svg class="icon-small" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                                </svg>
+                                Đơn hàng
+                            </a>
+                            <a href="/Account/Logout" class="dropdown-item logout">
+                                <svg class="icon-small" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                                </svg>
+                                Đăng xuất
+                            </a>
+                        </div>
                     </div>
                 }
                 else
@@ -127,6 +151,24 @@
     </footer>
 
     <script src="~/js/cart.js"></script>
+    <script>
+        // User menu dropdown
+        document.addEventListener('DOMContentLoaded', () => {
+            const trigger = document.querySelector('.user-menu-trigger');
+            const dropdown = document.querySelector('.user-dropdown');
+            
+            if (trigger && dropdown) {
+                trigger.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    dropdown.classList.toggle('show');
+                });
+                
+                document.addEventListener('click', () => {
+                    dropdown.classList.remove('show');
+                });
+            }
+        });
+    </script>
     @RenderSection("Scripts", required: false)
 </body>
 </html>

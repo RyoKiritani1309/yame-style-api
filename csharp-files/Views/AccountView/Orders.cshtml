@@ -1,0 +1,348 @@
+@model List<YameApi.Models.Order>
+@{
+    ViewData["Title"] = "Đơn hàng của tôi";
+}
+
+<div class="account-page">
+    <div class="container">
+        <div class="account-layout">
+            <!-- Sidebar -->
+            <aside class="account-sidebar">
+                <div class="user-info">
+                    <div class="user-avatar">
+                        <span>@(Context.Session.GetString("UserName")?.Substring(0, 1).ToUpper() ?? "U")</span>
+                    </div>
+                    <h3>@(Context.Session.GetString("UserName") ?? "Người dùng")</h3>
+                    <p class="user-email">@Context.Session.GetString("UserEmail")</p>
+                </div>
+                <nav class="account-nav">
+                    <a href="/AccountView/Profile">Thông tin tài khoản</a>
+                    <a href="/AccountView/Orders" class="active">Đơn hàng của tôi</a>
+                    <a href="/AccountView/ChangePassword">Đổi mật khẩu</a>
+                    <a href="/Account/Logout" class="logout-link">Đăng xuất</a>
+                </nav>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="account-main">
+                <div class="account-card">
+                    <h2>Đơn hàng của tôi</h2>
+
+                    @if (Model == null || !Model.Any())
+                    {
+                        <div class="empty-state">
+                            <svg class="empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                            </svg>
+                            <h3>Chưa có đơn hàng nào</h3>
+                            <p>Bạn chưa đặt hàng. Hãy khám phá các sản phẩm của chúng tôi!</p>
+                            <a href="/Products" class="btn btn-primary">Mua sắm ngay</a>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="orders-list">
+                            @foreach (var order in Model.OrderByDescending(o => o.OrderDate))
+                            {
+                                <div class="order-item">
+                                    <div class="order-header">
+                                        <div class="order-info">
+                                            <h3>Đơn hàng #@order.OrderNumber</h3>
+                                            <p class="order-date">@order.OrderDate.ToString("dd/MM/yyyy HH:mm")</p>
+                                        </div>
+                                        <div class="order-status">
+                                            <span class="status-badge status-@order.Status.ToLower()">
+                                                @(order.Status switch
+                                                {
+                                                    "Pending" => "Chờ xử lý",
+                                                    "Processing" => "Đang xử lý",
+                                                    "Shipped" => "Đang giao",
+                                                    "Delivered" => "Đã giao",
+                                                    "Cancelled" => "Đã hủy",
+                                                    _ => order.Status
+                                                })
+                                            </span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="order-details">
+                                        <div class="order-items">
+                                            <p><strong>Sản phẩm:</strong> @order.Items.Count mặt hàng</p>
+                                            <p><strong>Tổng tiền:</strong> @order.Total.ToString("N0") đ</p>
+                                        </div>
+                                        <div class="order-actions">
+                                            <a href="/AccountView/OrderDetail/@order.OrderId" class="btn btn-outline">Xem chi tiết</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </main>
+        </div>
+    </div>
+</div>
+
+<style>
+.account-page {
+    padding: 80px 0 60px;
+    min-height: 100vh;
+    background-color: #f8f9fa;
+}
+
+.account-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 30px;
+    margin-top: 30px;
+}
+
+.account-sidebar {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    height: fit-content;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.user-info {
+    text-align: center;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #e9ecef;
+    margin-bottom: 20px;
+}
+
+.user-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    font-weight: 600;
+    margin: 0 auto 15px;
+}
+
+.user-info h3 {
+    margin: 0 0 5px;
+    font-size: 18px;
+    color: #212529;
+}
+
+.user-email {
+    color: #6c757d;
+    font-size: 14px;
+    margin: 0;
+}
+
+.account-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.account-nav a {
+    padding: 12px 16px;
+    color: #495057;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.2s;
+    font-size: 15px;
+}
+
+.account-nav a:hover {
+    background-color: #f8f9fa;
+    color: #212529;
+}
+
+.account-nav a.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.account-nav .logout-link {
+    margin-top: 10px;
+    color: #dc3545;
+}
+
+.account-main {
+    background: white;
+    border-radius: 12px;
+    padding: 40px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.account-card h2 {
+    margin: 0 0 30px;
+    font-size: 24px;
+    color: #212529;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.empty-icon {
+    width: 80px;
+    height: 80px;
+    color: #adb5bd;
+    margin: 0 auto 20px;
+}
+
+.empty-state h3 {
+    margin: 0 0 10px;
+    font-size: 20px;
+    color: #212529;
+}
+
+.empty-state p {
+    margin: 0 0 24px;
+    color: #6c757d;
+}
+
+.orders-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.order-item {
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.order-info h3 {
+    margin: 0 0 5px;
+    font-size: 18px;
+    color: #212529;
+}
+
+.order-date {
+    margin: 0;
+    color: #6c757d;
+    font-size: 14px;
+}
+
+.status-badge {
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.status-pending {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.status-processing {
+    background-color: #cfe2ff;
+    color: #084298;
+}
+
+.status-shipped {
+    background-color: #d1e7dd;
+    color: #0f5132;
+}
+
+.status-delivered {
+    background-color: #d1e7dd;
+    color: #0a3622;
+}
+
+.status-cancelled {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.order-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+}
+
+.order-items p {
+    margin: 0 0 8px;
+    color: #495057;
+    font-size: 15px;
+}
+
+.order-items p:last-child {
+    margin: 0;
+}
+
+.btn {
+    padding: 10px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.btn-outline {
+    background: white;
+    color: #667eea;
+    border: 1px solid #667eea;
+}
+
+.btn-outline:hover {
+    background: #667eea;
+    color: white;
+}
+
+@media (max-width: 768px) {
+    .account-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .account-sidebar {
+        order: 2;
+    }
+
+    .account-main {
+        order: 1;
+        padding: 24px;
+    }
+
+    .order-header {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .order-details {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 15px;
+    }
+}
+</style>

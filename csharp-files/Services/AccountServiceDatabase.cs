@@ -10,6 +10,10 @@ namespace YameApi.Services
         Task<UserAccount?> LoginAsync(string email, string password);
         Task<UserAccount?> GetUserByIdAsync(int userId);
         Task<UserAccount?> GetUserByEmailAsync(string email);
+        Task<bool> UpdateProfileAsync(int userId, string? fullName, string? phone, string? address);
+        Task<bool> ChangePasswordAsync(int userId, string currentPassword, string newPassword);
+        Task<string?> GeneratePasswordResetTokenAsync(string email);
+        Task<bool> ResetPasswordAsync(string email, string token, string newPassword);
     }
 
     public class AccountServiceDatabase : IAccountService
@@ -179,6 +183,137 @@ namespace YameApi.Services
             var newHash = HashPassword(password);
             return newHash == hash;
         }
+
+        public async Task<bool> UpdateProfileAsync(int userId, string? fullName, string? phone, string? address)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+
+                var query = @"
+                    UPDATE Customers 
+                    SET FullName = @FullName, 
+                        Phone = @Phone, 
+                        Address = @Address
+                    WHERE UserId = @UserId";
+
+                using (var cmd = new SqlCommand(query, connection))
+                {
+                    cmd.Parameters.Add(new SqlParameter("@UserId", userId));
+                    cmd.Parameters.Add(new SqlParameter("@FullName", (object?)fullName ?? DBNull.Value));
+                    cmd.Parameters.Add(new SqlParameter("@Phone", (object?)phone ?? DBNull.Value));
+                    cmd.Parameters.Add(new SqlParameter("@Address", (object?)address ?? DBNull.Value));
+
+                    var rowsAffected = await cmd.ExecuteNonQueryAsync();
+                    return rowsAffected > 0;
+                }
+            }
+        }
+
+        public async Task<bool> ChangePasswordAsync(int userId, string currentPassword, string newPassword)
+        {
+            var user = await GetUserByIdAsync(userId);
+            if (user == null || !VerifyPassword(currentPassword, user.PasswordHash))
+                return false;
+
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+
+                var query = "UPDATE Users SET PasswordHash = @PasswordHash WHERE UserId = @UserId";
+
+                using (var cmd = new SqlCommand(query, connection))
+                {
+                    cmd.Parameters.Add(new SqlParameter("@UserId", userId));
+                    cmd.Parameters.Add(new SqlParameter("@PasswordHash", HashPassword(newPassword)));
+
+                    var rowsAffected = await cmd.ExecuteNonQueryAsync();
+                    return rowsAffected > 0;
+                }
+            }
+        }
+
+        public async Task<string?> GeneratePasswordResetTokenAsync(string email)
+        {
+            var user = await GetUserByEmailAsync(email);
+            if (user == null)
+                return null;
+
+            // Generate a simple token (in production, use a more secure approach)
+            var token = Convert.ToBase64String(Guid.NewGuid().ToByteArray()).Substring(0, 32);
+            
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+
+                // Store token with expiration (1 hour)
+                var query = @"
+                    IF EXISTS (SELECT 1 FROM PasswordResetTokens WHERE Email = @Email)
+                        UPDATE PasswordResetTokens SET Token = @Token, ExpiresAt = DATEADD(HOUR, 1, GETDATE())
+                        WHERE Email = @Email
+                    ELSE
+                        INSERT INTO PasswordResetTokens (Email, Token, ExpiresAt)
+                        VALUES (@Email, @Token, DATEADD(HOUR, 1, GETDATE()))";
+
+                using (var cmd = new SqlCommand(query, connection))
+                {
+                    cmd.Parameters.Add(new SqlParameter("@Email", email));
+                    cmd.Parameters.Add(new SqlParameter("@Token", token));
+                    await cmd.ExecuteNonQueryAsync();
+                }
+            }
+
+            return token;
+        }
+
+        public async Task<bool> ResetPasswordAsync(string email, string token, string newPassword)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+
+                // Verify token
+                var verifyQuery = @"
+                    SELECT Email FROM PasswordResetTokens 
+                    WHERE Email = @Email AND Token = @Token AND ExpiresAt > GETDATE()";
+
+                using (var cmd = new SqlCommand(verifyQuery, connection))
+                {
+                    cmd.Parameters.Add(new SqlParameter("@Email", email));
+                    cmd.Parameters.Add(new SqlParameter("@Token", token));
+
+                    var result = await cmd.ExecuteScalarAsync();
+                    if (result == null)
+                        return false;
+                }
+
+                // Update password
+                var updateQuery = @"
+                    UPDATE Users SET PasswordHash = @PasswordHash WHERE Email = @Email";
+
+                using (var cmd = new SqlCommand(updateQuery, connection))
+                {
+                    cmd.Parameters.Add(new SqlParameter("@Email", email));
+                    cmd.Parameters.Add(new SqlParameter("@PasswordHash", HashPassword(newPassword)));
+
+                    var rowsAffected = await cmd.ExecuteNonQueryAsync();
+                    
+                    if (rowsAffected > 0)
+                    {
+                        // Delete used token
+                        var deleteQuery = "DELETE FROM PasswordResetTokens WHERE Email = @Email";
+                        using (var deleteCmd = new SqlCommand(deleteQuery, connection))
+                        {
+                            deleteCmd.Parameters.Add(new SqlParameter("@Email", email));
+                            await deleteCmd.ExecuteNonQueryAsync();
+                        }
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
     }
 
     // User model
@@ -189,6 +324,7 @@ namespace YameApi.Services
         public string PasswordHash { get; set; } = string.Empty;
         public string? FullName { get; set; }
         public string? Phone { get; set; }
+        public string? Address { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 }

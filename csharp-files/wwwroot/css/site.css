@@ -189,32 +189,93 @@ img {
 }
 
 .user-menu {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
+    position: relative;
     margin-left: 1rem;
 }
 
-.user-name {
-    color: #2d3748;
-    font-weight: 600;
-}
-
-.logout-btn {
+.user-menu-trigger {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
     padding: 0.5rem 1rem;
-    background: #f7fafc;
-    color: #2d3748;
-    border: 1px solid #e2e8f0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
     border-radius: 0.5rem;
-    text-decoration: none;
+    cursor: pointer;
     font-weight: 500;
     transition: all 0.3s;
 }
 
-.logout-btn:hover {
-    background: #edf2f7;
-    border-color: #cbd5e0;
+.user-menu-trigger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
+
+.icon-small {
+    width: 16px;
+    height: 16px;
+}
+
+.user-dropdown {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    right: 0;
+    min-width: 220px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s;
+    z-index: 100;
+}
+
+.user-dropdown.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    color: #2d3748;
+    text-decoration: none;
+    transition: background-color 0.2s;
+    border-bottom: 1px solid #f7fafc;
+}
+
+.dropdown-item:hover {
+    background-color: #f7fafc;
+}
+
+.dropdown-item:last-child {
+    border-bottom: none;
+    border-radius: 0 0 0.5rem 0.5rem;
+}
+
+.dropdown-item:first-child {
+    border-radius: 0.5rem 0.5rem 0 0;
+}
+
+.dropdown-item.logout {
+    color: #dc3545;
+}
+
+.dropdown-item.logout:hover {
+    background-color: #fff5f5;
+}
+
+.user-name {
+    color: white;
+    font-weight: 500;
+}
+
 
 /* Hero Section */
 .hero {

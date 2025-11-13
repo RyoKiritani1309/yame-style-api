@@ -1,0 +1,353 @@
+@model YameApi.Models.Order
+@{
+    ViewData["Title"] = "Chi tiết đơn hàng";
+}
+
+<div class="order-detail-page">
+    <div class="container">
+        <div class="back-link">
+            <a href="/AccountView/Orders">
+                <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                </svg>
+                Quay lại danh sách đơn hàng
+            </a>
+        </div>
+
+        <div class="order-detail-card">
+            <div class="order-detail-header">
+                <div>
+                    <h1>Đơn hàng #@Model.OrderNumber</h1>
+                    <p class="order-date">Đặt ngày @Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</p>
+                </div>
+                <span class="status-badge status-@Model.Status.ToLower()">
+                    @(Model.Status switch
+                    {
+                        "Pending" => "Chờ xử lý",
+                        "Processing" => "Đang xử lý",
+                        "Shipped" => "Đang giao",
+                        "Delivered" => "Đã giao",
+                        "Cancelled" => "Đã hủy",
+                        _ => Model.Status
+                    })
+                </span>
+            </div>
+
+            <div class="order-sections">
+                <!-- Order Items -->
+                <section class="order-section">
+                    <h2>Sản phẩm đã đặt</h2>
+                    <div class="items-list">
+                        @foreach (var item in Model.Items)
+                        {
+                            <div class="item-row">
+                                @if (item.Product != null)
+                                {
+                                    <div class="item-image">
+                                        <img src="@item.Product.ImageUrl" alt="@item.Product.Name" />
+                                    </div>
+                                    <div class="item-info">
+                                        <h3>@item.Product.Name</h3>
+                                        @if (item.Variant != null)
+                                        {
+                                            <p class="item-variant">
+                                                @if (!string.IsNullOrEmpty(item.Variant.Color))
+                                                {
+                                                    <span>Màu: @item.Variant.Color</span>
+                                                }
+                                                @if (!string.IsNullOrEmpty(item.Variant.Size))
+                                                {
+                                                    <span>Size: @item.Variant.Size</span>
+                                                }
+                                            </p>
+                                        }
+                                        <p class="item-quantity">Số lượng: @item.Quantity</p>
+                                    </div>
+                                }
+                                <div class="item-price">
+                                    <p class="unit-price">@item.UnitPrice.ToString("N0") đ</p>
+                                    <p class="line-total">@item.LineTotal.ToString("N0") đ</p>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </section>
+
+                <!-- Shipping & Billing Info -->
+                <section class="order-section">
+                    <h2>Thông tin giao hàng</h2>
+                    <div class="info-grid">
+                        <div class="info-block">
+                            <h3>Địa chỉ giao hàng</h3>
+                            <p>@Model.ShippingAddress</p>
+                        </div>
+                        @if (!string.IsNullOrEmpty(Model.BillingAddress) && Model.BillingAddress != Model.ShippingAddress)
+                        {
+                            <div class="info-block">
+                                <h3>Địa chỉ thanh toán</h3>
+                                <p>@Model.BillingAddress</p>
+                            </div>
+                        }
+                        <div class="info-block">
+                            <h3>Phương thức thanh toán</h3>
+                            <p>@(Model.PaymentMethod == "COD" ? "Thanh toán khi nhận hàng" : Model.PaymentMethod)</p>
+                        </div>
+                        <div class="info-block">
+                            <h3>Phương thức vận chuyển</h3>
+                            <p>@(Model.ShippingMethod == "Standard" ? "Giao hàng tiêu chuẩn" : Model.ShippingMethod)</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Order Summary -->
+                <section class="order-section">
+                    <h2>Tóm tắt đơn hàng</h2>
+                    <div class="summary-rows">
+                        <div class="summary-row">
+                            <span>Tạm tính:</span>
+                            <span>@Model.SubTotal.ToString("N0") đ</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Giảm giá:</span>
+                            <span>-@Model.Discount.ToString("N0") đ</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Phí vận chuyển:</span>
+                            <span>@Model.Shipping.ToString("N0") đ</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Thuế:</span>
+                            <span>@Model.Tax.ToString("N0") đ</span>
+                        </div>
+                        <div class="summary-row total">
+                            <span>Tổng cộng:</span>
+                            <span>@Model.Total.ToString("N0") đ</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.order-detail-page {
+    padding: 100px 0 60px;
+    min-height: 100vh;
+    background-color: #f8f9fa;
+}
+
+.back-link {
+    margin-bottom: 20px;
+}
+
+.back-link a {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.back-link a:hover {
+    color: #764ba2;
+}
+
+.back-link .icon {
+    width: 20px;
+    height: 20px;
+}
+
+.order-detail-card {
+    background: white;
+    border-radius: 12px;
+    padding: 40px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.order-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    padding-bottom: 30px;
+    border-bottom: 2px solid #e9ecef;
+    margin-bottom: 40px;
+}
+
+.order-detail-header h1 {
+    margin: 0 0 8px;
+    font-size: 28px;
+    color: #212529;
+}
+
+.order-date {
+    margin: 0;
+    color: #6c757d;
+    font-size: 15px;
+}
+
+.status-badge {
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.status-pending { background-color: #fff3cd; color: #856404; }
+.status-processing { background-color: #cfe2ff; color: #084298; }
+.status-shipped { background-color: #d1e7dd; color: #0f5132; }
+.status-delivered { background-color: #d1e7dd; color: #0a3622; }
+.status-cancelled { background-color: #f8d7da; color: #721c24; }
+
+.order-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+}
+
+.order-section h2 {
+    margin: 0 0 20px;
+    font-size: 20px;
+    color: #212529;
+}
+
+.items-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.item-row {
+    display: grid;
+    grid-template-columns: 80px 1fr auto;
+    gap: 20px;
+    padding: 20px;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+}
+
+.item-image img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.item-info h3 {
+    margin: 0 0 8px;
+    font-size: 16px;
+    color: #212529;
+}
+
+.item-variant {
+    margin: 0 0 8px;
+    color: #6c757d;
+    font-size: 14px;
+}
+
+.item-variant span {
+    margin-right: 12px;
+}
+
+.item-quantity {
+    margin: 0;
+    color: #495057;
+    font-size: 14px;
+}
+
+.item-price {
+    text-align: right;
+}
+
+.unit-price {
+    margin: 0 0 8px;
+    color: #6c757d;
+    font-size: 14px;
+}
+
+.line-total {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #212529;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+}
+
+.info-block h3 {
+    margin: 0 0 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #495057;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.info-block p {
+    margin: 0;
+    color: #212529;
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+.summary-rows {
+    max-width: 400px;
+    margin-left: auto;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid #e9ecef;
+    font-size: 15px;
+}
+
+.summary-row.total {
+    margin-top: 12px;
+    padding-top: 20px;
+    border-top: 2px solid #212529;
+    border-bottom: none;
+    font-size: 20px;
+    font-weight: 600;
+    color: #212529;
+}
+
+@media (max-width: 768px) {
+    .order-detail-card {
+        padding: 24px;
+    }
+
+    .order-detail-header {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .item-row {
+        grid-template-columns: 60px 1fr;
+        gap: 15px;
+    }
+
+    .item-image img {
+        width: 60px;
+        height: 60px;
+    }
+
+    .item-price {
+        grid-column: 2;
+        text-align: left;
+        margin-top: 10px;
+    }
+
+    .info-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+}
+</style>
