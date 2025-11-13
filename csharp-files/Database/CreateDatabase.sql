@@ -132,8 +132,19 @@ CREATE TABLE Customers (
     Email NVARCHAR(200) NOT NULL UNIQUE,
     FullName NVARCHAR(200),
     Phone NVARCHAR(20),
+    Address NVARCHAR(500),
     CreatedAt DATETIME2 DEFAULT GETDATE(),
     FOREIGN KEY (UserId) REFERENCES Users(UserId) ON DELETE CASCADE
+);
+GO
+
+-- Password Reset Tokens Table
+CREATE TABLE PasswordResetTokens (
+    TokenId INT PRIMARY KEY IDENTITY(1,1),
+    Email NVARCHAR(200) NOT NULL,
+    Token NVARCHAR(100) NOT NULL,
+    ExpiresAt DATETIME2 NOT NULL,
+    CreatedAt DATETIME2 DEFAULT GETDATE()
 );
 GO
 
