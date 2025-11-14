@@ -19,6 +19,7 @@ builder.Services.AddScoped<IProductService, ProductServiceDatabase>();
 builder.Services.AddScoped<ICartService, CartServiceDatabase>();
 builder.Services.AddScoped<IAccountService, AccountServiceDatabase>();
 builder.Services.AddScoped<IOrderService, OrderServiceDatabase>();
+builder.Services.AddScoped<IAdminService, AdminServiceDatabase>();
 
 // Add CORS for frontend
 builder.Services.AddCors(options =>

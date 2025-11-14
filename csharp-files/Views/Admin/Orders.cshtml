@@ -1,0 +1,230 @@
+@model YameApi.Models.PaginatedList<YameApi.Models.Order>
+@{
+    ViewData["Title"] = "Quản lý đơn hàng";
+    var currentStatus = ViewBag.CurrentStatus as string;
+}
+
+<div class="admin-orders">
+    <div class="page-header">
+        <h1>Quản lý đơn hàng</h1>
+    </div>
+
+    <div class="filter-tabs">
+        <a href="@Url.Action("Orders", "Admin")" class="@(string.IsNullOrEmpty(currentStatus) ? "active" : "")">Tất cả</a>
+        <a href="@Url.Action("Orders", "Admin", new { status = "Pending" })" class="@(currentStatus == "Pending" ? "active" : "")">Chờ xử lý</a>
+        <a href="@Url.Action("Orders", "Admin", new { status = "Processing" })" class="@(currentStatus == "Processing" ? "active" : "")">Đang xử lý</a>
+        <a href="@Url.Action("Orders", "Admin", new { status = "Shipped" })" class="@(currentStatus == "Shipped" ? "active" : "")">Đã gửi</a>
+        <a href="@Url.Action("Orders", "Admin", new { status = "Delivered" })" class="@(currentStatus == "Delivered" ? "active" : "")">Đã giao</a>
+        <a href="@Url.Action("Orders", "Admin", new { status = "Cancelled" })" class="@(currentStatus == "Cancelled" ? "active" : "")">Đã hủy</a>
+    </div>
+
+    <div class="orders-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Mã đơn</th>
+                    <th>Ngày đặt</th>
+                    <th>Khách hàng</th>
+                    <th>Tổng tiền</th>
+                    <th>Trạng thái</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var order in Model.Items)
+                {
+                    <tr>
+                        <td><strong>@order.OrderNumber</strong></td>
+                        <td>@order.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>@order.ShippingAddress</td>
+                        <td>@order.Total.ToString("N0") ₫</td>
+                        <td>
+                            <select class="status-select" data-order-id="@order.OrderId" onchange="updateOrderStatus(this)">
+                                <option value="Pending" @(order.Status == "Pending" ? "selected" : "")>Chờ xử lý</option>
+                                <option value="Processing" @(order.Status == "Processing" ? "selected" : "")>Đang xử lý</option>
+                                <option value="Shipped" @(order.Status == "Shipped" ? "selected" : "")>Đã gửi</option>
+                                <option value="Delivered" @(order.Status == "Delivered" ? "selected" : "")>Đã giao</option>
+                                <option value="Cancelled" @(order.Status == "Cancelled" ? "selected" : "")>Đã hủy</option>
+                            </select>
+                        </td>
+                        <td>
+                            <a href="@Url.Action("OrderDetail", "Admin", new { id = order.OrderId })" class="btn-view">Xem chi tiết</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        <div class="pagination">
+            @if (Model.HasPreviousPage)
+            {
+                <a href="?page=@(Model.Page - 1)@(currentStatus != null ? "&status=" + currentStatus : "")">« Trước</a>
+            }
+            @for (int i = 1; i <= Model.TotalPages; i++)
+            {
+                if (i == Model.Page)
+                {
+                    <span class="active">@i</span>
+                }
+                else
+                {
+                    <a href="?page=@i@(currentStatus != null ? "&status=" + currentStatus : "")">@i</a>
+                }
+            }
+            @if (Model.HasNextPage)
+            {
+                <a href="?page=@(Model.Page + 1)@(currentStatus != null ? "&status=" + currentStatus : "")">Sau »</a>
+            }
+        </div>
+    }
+</div>
+
+<script>
+function updateOrderStatus(select) {
+    const orderId = select.dataset.orderId;
+    const status = select.value;
+    
+    fetch('/Admin/UpdateOrderStatus', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId: orderId, status: status })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            alert('Cập nhật trạng thái thành công');
+        } else {
+            alert('Không thể cập nhật: ' + data.message);
+        }
+    });
+}
+</script>
+
+<style>
+.admin-orders {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 30px 20px;
+}
+
+.page-header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 20px;
+}
+
+.filter-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #e5e5e5;
+    padding-bottom: 0;
+}
+
+.filter-tabs a {
+    padding: 12px 24px;
+    text-decoration: none;
+    color: #666;
+    font-weight: 600;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.3s ease;
+}
+
+.filter-tabs a:hover {
+    color: #1a1a1a;
+}
+
+.filter-tabs a.active {
+    color: #1a1a1a;
+    border-bottom-color: #1a1a1a;
+}
+
+.orders-table {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+thead {
+    background: #f8f9fa;
+}
+
+th {
+    padding: 16px;
+    text-align: left;
+    font-weight: 600;
+    color: #1a1a1a;
+    border-bottom: 2px solid #e5e5e5;
+}
+
+td {
+    padding: 16px;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.status-select {
+    padding: 6px 12px;
+    border: 1px solid #e5e5e5;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.status-select:focus {
+    outline: none;
+    border-color: #1a1a1a;
+}
+
+.btn-view {
+    padding: 6px 16px;
+    background: #e3f2fd;
+    color: #1976d2;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-view:hover {
+    background: #bbdefb;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 30px;
+}
+
+.pagination a, .pagination span {
+    padding: 8px 16px;
+    border: 1px solid #e5e5e5;
+    border-radius: 6px;
+    text-decoration: none;
+    color: #1a1a1a;
+    transition: all 0.3s ease;
+}
+
+.pagination a:hover {
+    background: #f8f9fa;
+}
+
+.pagination span.active {
+    background: #1a1a1a;
+    color: white;
+    border-color: #1a1a1a;
+}
+</style>
