@@ -23,19 +23,19 @@
             <h4 class="filter-title">Khoảng giá</h4>
             <div class="filter-options">
                 <label class="filter-option">
-                    <input type="checkbox" class="filter-checkbox" />
+                    <input type="checkbox" class="filter-checkbox price-filter" data-min="0" data-max="200000" />
                     <span class="filter-label">Dưới 200.000đ</span>
                 </label>
                 <label class="filter-option">
-                    <input type="checkbox" class="filter-checkbox" />
+                    <input type="checkbox" class="filter-checkbox price-filter" data-min="200000" data-max="500000" />
                     <span class="filter-label">200.000đ - 500.000đ</span>
                 </label>
                 <label class="filter-option">
-                    <input type="checkbox" class="filter-checkbox" />
+                    <input type="checkbox" class="filter-checkbox price-filter" data-min="500000" data-max="1000000" />
                     <span class="filter-label">500.000đ - 1.000.000đ</span>
                 </label>
                 <label class="filter-option">
-                    <input type="checkbox" class="filter-checkbox" />
+                    <input type="checkbox" class="filter-checkbox price-filter" data-min="1000000" data-max="999999999" />
                     <span class="filter-label">Trên 1.000.000đ</span>
                 </label>
             </div>
@@ -47,7 +47,7 @@
             <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
                 @foreach (var size in new[] { "S", "M", "L", "XL", "XXL" })
                 {
-                    <button class="btn" style="padding: 0.5rem; width: 2.5rem; height: 2.5rem; border: 1px solid var(--border);">@size</button>
+                    <button class="btn size-filter" data-size="@size" style="padding: 0.5rem; width: 2.5rem; height: 2.5rem; border: 1px solid var(--border);">@size</button>
                 }
             </div>
         </div>
@@ -59,26 +59,15 @@
                 @foreach (var color in new[] { "Đen", "Trắng", "Xám", "Navy", "Vàng" })
                 {
                     <label class="filter-option">
-                        <input type="checkbox" class="filter-checkbox" />
+                        <input type="checkbox" class="filter-checkbox color-filter" data-color="@color" />
                         <span class="filter-label">@color</span>
                     </label>
                 }
             </div>
         </div>
 
-        <!-- Category -->
-        <div class="filter-section">
-            <h4 class="filter-title">Danh mục</h4>
-            <div class="filter-options">
-                @foreach (var category in new[] { "Áo", "Quần", "Giày", "Phụ kiện" })
-                {
-                    <label class="filter-option">
-                        <input type="checkbox" class="filter-checkbox" />
-                        <span class="filter-label">@category</span>
-                    </label>
-                }
-            </div>
-        </div>
+        <!-- Clear Filters -->
+        <button id="clearFilters" class="btn btn-secondary" style="width: 100%; margin-top: 1rem;">Xóa bộ lọc</button>
     </aside>
 
     <!-- Products Content -->
@@ -89,11 +78,11 @@
             
             <div style="display: flex; align-items: center; gap: 0.5rem;">
                 <label for="sort" style="font-size: 0.875rem;">Sắp xếp:</label>
-                <select id="sort" class="sort-select">
-                    <option value="popularity">Phổ biến nhất</option>
-                    <option value="price-asc">Giá: Thấp đến cao</option>
-                    <option value="price-desc">Giá: Cao đến thấp</option>
-                    <option value="newest">Mới nhất</option>
+                <select id="sortSelect" class="sort-select">
+                    <option value="relevance" @(ViewContext.HttpContext.Request.Query["sort"] == "relevance" || string.IsNullOrEmpty(ViewContext.HttpContext.Request.Query["sort"]) ? "selected" : "")>Phổ biến nhất</option>
+                    <option value="price-asc" @(ViewContext.HttpContext.Request.Query["sort"] == "price-asc" ? "selected" : "")>Giá: Thấp đến cao</option>
+                    <option value="price-desc" @(ViewContext.HttpContext.Request.Query["sort"] == "price-desc" ? "selected" : "")>Giá: Cao đến thấp</option>
+                    <option value="newest" @(ViewContext.HttpContext.Request.Query["sort"] == "newest" ? "selected" : "")>Mới nhất</option>
                 </select>
             </div>
         </div>
@@ -166,3 +155,102 @@
         </div>
     </div>
 </div>
+
+<script>
+    // Filter handling
+    const updateFilters = () => {
+        const params = new URLSearchParams(window.location.search);
+        
+        // Get price ranges
+        const priceFilters = document.querySelectorAll('.price-filter:checked');
+        if (priceFilters.length > 0) {
+            const minPrices = [];
+            const maxPrices = [];
+            priceFilters.forEach(filter => {
+                minPrices.push(parseInt(filter.dataset.min));
+                maxPrices.push(parseInt(filter.dataset.max));
+            });
+            params.set('priceMin', Math.min(...minPrices));
+            params.set('priceMax', Math.max(...maxPrices));
+        } else {
+            params.delete('priceMin');
+            params.delete('priceMax');
+        }
+        
+        // Get sizes
+        const sizeButtons = document.querySelectorAll('.size-filter.active');
+        if (sizeButtons.length > 0) {
+            const sizes = Array.from(sizeButtons).map(btn => btn.dataset.size);
+            sizes.forEach((size, index) => {
+                params.append('sizes', size);
+            });
+        } else {
+            params.delete('sizes');
+        }
+        
+        // Get colors
+        const colorFilters = document.querySelectorAll('.color-filter:checked');
+        if (colorFilters.length > 0) {
+            const colors = Array.from(colorFilters).map(filter => filter.dataset.color);
+            colors.forEach((color, index) => {
+                params.append('colors', color);
+            });
+        } else {
+            params.delete('colors');
+        }
+        
+        // Reload page with new filters
+        window.location.search = params.toString();
+    };
+    
+    // Price filter change
+    document.querySelectorAll('.price-filter').forEach(filter => {
+        filter.addEventListener('change', updateFilters);
+    });
+    
+    // Size filter toggle
+    document.querySelectorAll('.size-filter').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            this.classList.toggle('active');
+            updateFilters();
+        });
+    });
+    
+    // Color filter change
+    document.querySelectorAll('.color-filter').forEach(filter => {
+        filter.addEventListener('change', updateFilters);
+    });
+    
+    // Sort change
+    document.getElementById('sortSelect').addEventListener('change', function() {
+        const params = new URLSearchParams(window.location.search);
+        params.set('sort', this.value);
+        window.location.search = params.toString();
+    });
+    
+    // Clear filters
+    document.getElementById('clearFilters').addEventListener('click', function() {
+        window.location.href = '/Products';
+    });
+    
+    // Restore active states from URL on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        const params = new URLSearchParams(window.location.search);
+        
+        // Restore size filters
+        const sizes = params.getAll('sizes');
+        sizes.forEach(size => {
+            const button = document.querySelector(`.size-filter[data-size="${size}"]`);
+            if (button) button.classList.add('active');
+        });
+    });
+</script>
+
+<style>
+    .size-filter.active {
+        background-color: var(--primary);
+        color: white;
+        border-color: var(--primary);
+    }
+</style>

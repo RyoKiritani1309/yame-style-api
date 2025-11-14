@@ -51,5 +51,27 @@ namespace YameApi.Controllers
 
             return Ok(product);
         }
+
+        /// <summary>
+        /// Submit a product review
+        /// </summary>
+        [HttpPost("review")]
+        public async Task<ActionResult> SubmitReview([FromBody] ReviewRequest request)
+        {
+            if (request.Rating < 1 || request.Rating > 5)
+                return BadRequest(new { message = "Rating must be between 1 and 5" });
+
+            if (string.IsNullOrWhiteSpace(request.CustomerName))
+                return BadRequest(new { message = "Customer name is required" });
+
+            if (string.IsNullOrWhiteSpace(request.Comment))
+                return BadRequest(new { message = "Comment is required" });
+
+            var result = await _productService.AddReviewAsync(request);
+            if (!result)
+                return NotFound(new { message = "Product not found" });
+
+            return Ok(new { message = "Review submitted successfully" });
+        }
     }
 }
