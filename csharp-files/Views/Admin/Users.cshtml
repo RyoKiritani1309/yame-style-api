@@ -1,0 +1,208 @@
+@model YameApi.Models.PaginatedList<YameApi.Models.UserAccount>
+@{
+    ViewData["Title"] = "Quản lý người dùng";
+}
+
+<div class="admin-users">
+    <div class="page-header">
+        <h1>Quản lý người dùng</h1>
+    </div>
+
+    <div class="users-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Email</th>
+                    <th>Tên</th>
+                    <th>Số điện thoại</th>
+                    <th>Ngày tạo</th>
+                    <th>Vai trò</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var user in Model.Items)
+                {
+                    <tr>
+                        <td>@user.UserId</td>
+                        <td>@user.Email</td>
+                        <td>@user.FullName</td>
+                        <td>@user.Phone</td>
+                        <td>@user.CreatedAt.ToString("dd/MM/yyyy")</td>
+                        <td>
+                            @if (user.Roles.Contains("admin"))
+                            {
+                                <span class="badge badge-admin">Admin</span>
+                            }
+                            @if (user.Roles.Contains("moderator"))
+                            {
+                                <span class="badge badge-moderator">Moderator</span>
+                            }
+                            @if (user.Roles.Contains("customer") || user.Roles.Count == 0)
+                            {
+                                <span class="badge badge-customer">Khách hàng</span>
+                            }
+                        </td>
+                        <td>
+                            <button onclick="toggleRole(@user.UserId, 'admin')" class="btn-role">
+                                @(user.Roles.Contains("admin") ? "Gỡ Admin" : "Đặt Admin")
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        <div class="pagination">
+            @if (Model.HasPreviousPage)
+            {
+                <a href="?page=@(Model.Page - 1)">« Trước</a>
+            }
+            @for (int i = 1; i <= Model.TotalPages; i++)
+            {
+                if (i == Model.Page)
+                {
+                    <span class="active">@i</span>
+                }
+                else
+                {
+                    <a href="?page=@i">@i</a>
+                }
+            }
+            @if (Model.HasNextPage)
+            {
+                <a href="?page=@(Model.Page + 1)">Sau »</a>
+            }
+        </div>
+    }
+</div>
+
+<script>
+function toggleRole(userId, role) {
+    fetch('/Admin/ToggleUserRole', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: userId, role: role })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Không thể cập nhật: ' + data.message);
+        }
+    });
+}
+</script>
+
+<style>
+.admin-users {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 30px 20px;
+}
+
+.page-header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 30px;
+}
+
+.users-table {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+thead {
+    background: #f8f9fa;
+}
+
+th {
+    padding: 16px;
+    text-align: left;
+    font-weight: 600;
+    color: #1a1a1a;
+    border-bottom: 2px solid #e5e5e5;
+}
+
+td {
+    padding: 16px;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.badge {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-right: 4px;
+}
+
+.badge-admin {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.badge-moderator {
+    background: #fff3e0;
+    color: #ef6c00;
+}
+
+.badge-customer {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.btn-role {
+    padding: 6px 16px;
+    background: #f5f5f5;
+    border: 1px solid #e5e5e5;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-role:hover {
+    background: #e5e5e5;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 30px;
+}
+
+.pagination a, .pagination span {
+    padding: 8px 16px;
+    border: 1px solid #e5e5e5;
+    border-radius: 6px;
+    text-decoration: none;
+    color: #1a1a1a;
+    transition: all 0.3s ease;
+}
+
+.pagination a:hover {
+    background: #f8f9fa;
+}
+
+.pagination span.active {
+    background: #1a1a1a;
+    color: white;
+    border-color: #1a1a1a;
+}
+</style>
