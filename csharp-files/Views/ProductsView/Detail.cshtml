@@ -123,6 +123,58 @@
                 }
             </div>
         </div>
+
+        <!-- Reviews Section -->
+        <div style="margin-top: 3rem;">
+            <h2 class="section-title" style="font-size: 1.5rem; margin-bottom: 1.5rem;">Đánh giá sản phẩm</h2>
+            
+            @if (Model.Reviews != null && Model.Reviews.Count > 0)
+            {
+                <div class="reviews-summary" style="margin-bottom: 2rem; padding: 1.5rem; background: var(--background); border-radius: 0.5rem; border: 1px solid var(--border);">
+                    <div class="stars" style="font-size: 2rem;">
+                        @for (int i = 0; i < 5; i++)
+                        {
+                            <span class="star @(i < Math.Floor(Model.Reviews.Average) ? "filled" : "")">★</span>
+                        }
+                    </div>
+                    <p style="font-size: 1.25rem; font-weight: 600; margin-top: 0.5rem;">@Model.Reviews.Average.ToString("0.0") / 5.0</p>
+                    <p style="color: var(--muted-foreground);">Dựa trên @Model.Reviews.Count đánh giá</p>
+                </div>
+            }
+
+            <!-- Review Form -->
+            <div class="review-form" style="background: var(--background); padding: 1.5rem; border-radius: 0.5rem; border: 1px solid var(--border); margin-bottom: 2rem;">
+                <h3 class="section-title" style="font-size: 1.125rem; margin-bottom: 1rem;">Viết đánh giá của bạn</h3>
+                <form id="reviewForm">
+                    <input type="hidden" id="productId" value="@Model.Id" />
+                    
+                    <div style="margin-bottom: 1rem;">
+                        <label for="customerName" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Tên của bạn</label>
+                        <input type="text" id="customerName" required class="form-input" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border); border-radius: 0.25rem;" />
+                    </div>
+                    
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Đánh giá của bạn</label>
+                        <div class="star-rating" style="font-size: 2rem; cursor: pointer;">
+                            <span class="rating-star" data-rating="1">☆</span>
+                            <span class="rating-star" data-rating="2">☆</span>
+                            <span class="rating-star" data-rating="3">☆</span>
+                            <span class="rating-star" data-rating="4">☆</span>
+                            <span class="rating-star" data-rating="5">☆</span>
+                        </div>
+                        <input type="hidden" id="rating" value="0" />
+                    </div>
+                    
+                    <div style="margin-bottom: 1rem;">
+                        <label for="comment" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Nhận xét</label>
+                        <textarea id="comment" required rows="4" class="form-input" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border); border-radius: 0.25rem;"></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Gửi đánh giá</button>
+                </form>
+                <div id="reviewMessage" style="margin-top: 1rem; padding: 1rem; border-radius: 0.25rem; display: none;"></div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -457,5 +509,111 @@ document.addEventListener('DOMContentLoaded', function() {
             mainImage.src = this.src;
         });
     });
+});
+
+// Star rating for review form
+const ratingStars = document.querySelectorAll('.rating-star');
+const ratingInput = document.getElementById('rating');
+
+ratingStars.forEach(star => {
+    star.addEventListener('click', function() {
+        const rating = parseInt(this.dataset.rating);
+        ratingInput.value = rating;
+        
+        // Update star display
+        ratingStars.forEach((s, index) => {
+            if (index < rating) {
+                s.textContent = '★';
+                s.style.color = '#fbbf24';
+            } else {
+                s.textContent = '☆';
+                s.style.color = '#d1d5db';
+            }
+        });
+    });
+    
+    star.addEventListener('mouseenter', function() {
+        const rating = parseInt(this.dataset.rating);
+        ratingStars.forEach((s, index) => {
+            if (index < rating) {
+                s.textContent = '★';
+                s.style.color = '#fbbf24';
+            }
+        });
+    });
+});
+
+document.querySelector('.star-rating').addEventListener('mouseleave', function() {
+    const currentRating = parseInt(ratingInput.value);
+    ratingStars.forEach((s, index) => {
+        if (index < currentRating) {
+            s.textContent = '★';
+            s.style.color = '#fbbf24';
+        } else {
+            s.textContent = '☆';
+            s.style.color = '#d1d5db';
+        }
+    });
+});
+
+// Review form submission
+document.getElementById('reviewForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const productId = document.getElementById('productId').value;
+    const customerName = document.getElementById('customerName').value;
+    const rating = parseInt(document.getElementById('rating').value);
+    const comment = document.getElementById('comment').value;
+    const messageDiv = document.getElementById('reviewMessage');
+    
+    if (rating === 0) {
+        messageDiv.textContent = 'Vui lòng chọn số sao đánh giá';
+        messageDiv.style.display = 'block';
+        messageDiv.style.backgroundColor = '#fee2e2';
+        messageDiv.style.color = '#991b1b';
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/v1/Products/review', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                productId: parseInt(productId),
+                customerName: customerName,
+                rating: rating,
+                comment: comment
+            })
+        });
+        
+        if (response.ok) {
+            messageDiv.textContent = 'Cảm ơn bạn đã đánh giá! Đánh giá của bạn sẽ được hiển thị sau khi được duyệt.';
+            messageDiv.style.display = 'block';
+            messageDiv.style.backgroundColor = '#dcfce7';
+            messageDiv.style.color = '#166534';
+            
+            // Reset form
+            document.getElementById('reviewForm').reset();
+            ratingInput.value = 0;
+            ratingStars.forEach(s => {
+                s.textContent = '☆';
+                s.style.color = '#d1d5db';
+            });
+            
+            // Reload page after 2 seconds to show new review
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+        } else {
+            throw new Error('Failed to submit review');
+        }
+    } catch (error) {
+        messageDiv.textContent = 'Có lỗi xảy ra khi gửi đánh giá. Vui lòng thử lại.';
+        messageDiv.style.display = 'block';
+        messageDiv.style.backgroundColor = '#fee2e2';
+        messageDiv.style.color = '#991b1b';
+    }
 });
 </script>

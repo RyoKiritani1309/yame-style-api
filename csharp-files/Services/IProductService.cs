@@ -8,5 +8,6 @@ namespace YameApi.Services
         Task<ProductListResponse> GetProductsAsync(ProductQuery query);
         Task<Product?> GetByIdAsync(int id);
         Task<Product?> GetBySlugAsync(string slug);
+        Task<bool> AddReviewAsync(ReviewRequest request);
     }
 }

@@ -394,5 +394,40 @@ namespace YameApi.Services
                 return facets;
             }
         }
+
+        public async Task<bool> AddReviewAsync(ReviewRequest request)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+
+                // Check if product exists
+                var checkSql = "SELECT COUNT(*) FROM Products WHERE ProductId = @ProductId";
+                using (var checkCmd = new SqlCommand(checkSql, connection))
+                {
+                    checkCmd.Parameters.AddWithValue("@ProductId", request.ProductId);
+                    var count = (int)await checkCmd.ExecuteScalarAsync();
+                    if (count == 0)
+                        return false;
+                }
+
+                // Insert review
+                var insertSql = @"
+                    INSERT INTO Reviews (ProductId, CustomerName, Rating, Comment, CreatedAt)
+                    VALUES (@ProductId, @CustomerName, @Rating, @Comment, GETDATE())";
+
+                using (var cmd = new SqlCommand(insertSql, connection))
+                {
+                    cmd.Parameters.AddWithValue("@ProductId", request.ProductId);
+                    cmd.Parameters.AddWithValue("@CustomerName", request.CustomerName);
+                    cmd.Parameters.AddWithValue("@Rating", request.Rating);
+                    cmd.Parameters.AddWithValue("@Comment", request.Comment);
+
+                    await cmd.ExecuteNonQueryAsync();
+                }
+
+                return true;
+            }
+        }
     }
 }
